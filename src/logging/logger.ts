@@ -348,11 +348,21 @@ function defaultRollingPathForToday(): string {
 
 function isRollingPath(file: string): boolean {
   const base = path.basename(file);
-  return (
+
+  // Default rolling path: openclaw-YYYY-MM-DD.log
+  const isDefaultRolling = (
     base.startsWith(`${LOG_PREFIX}-`) &&
     base.endsWith(LOG_SUFFIX) &&
     base.length === `${LOG_PREFIX}-YYYY-MM-DD${LOG_SUFFIX}`.length
   );
+
+  // Custom rolling path: any-YYYY-MM-DD.log (supports %DATE% placeholder)
+  const isCustomRolling = (
+    base.endsWith(LOG_SUFFIX) &&
+    /\d{4}-\d{2}-\d{2}\.log$/.test(base)
+  );
+
+  return isDefaultRolling || isCustomRolling;
 }
 
 function pruneOldRollingLogs(dir: string): void {
