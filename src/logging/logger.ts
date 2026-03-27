@@ -145,9 +145,10 @@ function resolveSettings(): ResolvedSettings {
   if (file.includes("%DATE%") && cfg?.file) {
     const today = formatLocalDate(new Date());
     file = file.replace(/%DATE%/g, today);
-    // Extract prefix from template (e.g., "myservice-" from "myservice-%DATE%.log")
-    const parts = cfg.file.split("%DATE%");
-    logFilePrefix = path.basename(parts[0]);
+    // Extract the basename pattern and derive prefix
+    const basename = path.basename(cfg.file);
+    const parts = basename.split("%DATE%");
+    logFilePrefix = parts[0] || null;
   }
 
   const maxFileBytes = resolveMaxLogFileBytes(cfg?.maxFileBytes);
