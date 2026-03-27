@@ -131,7 +131,11 @@ function resolveSettings(): ResolvedSettings {
     process.env.VITEST === "true" && process.env.OPENCLAW_TEST_FILE_LOG !== "1" ? "silent" : "info";
   const fromConfig = normalizeLogLevel(cfg?.level, defaultLevel);
   const level = envLevel ?? fromConfig;
-  const file = cfg?.file ?? defaultRollingPathForToday();
+  let file = cfg?.file ?? defaultRollingPathForToday();
+  if (file.includes("%DATE%")) {
+    const today = formatLocalDate(new Date());
+    file = file.replace(/%DATE%/g, today);
+  }
   const maxFileBytes = resolveMaxLogFileBytes(cfg?.maxFileBytes);
   return { level, file, maxFileBytes };
 }
