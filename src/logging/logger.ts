@@ -75,7 +75,7 @@ const externalTransports = new Set<LogTransport>();
 
 function shouldSkipLoadConfigFallback(argv: string[] = process.argv): boolean {
   const [primary, secondary] = getCommandPathWithRootOptions(argv, 2);
-  return primary === "config" && secondary === "validate";
+  return primary === "config" && (secondary === "validate" || secondary === "schema");
 }
 
 function attachExternalTransport(logger: TsLogger<LogObj>, transport: LogTransport): void {
@@ -138,10 +138,10 @@ function resolveSettings(): ResolvedSettings {
     process.env.VITEST === "true" && process.env.OPENCLAW_TEST_FILE_LOG !== "1" ? "silent" : "info";
   const fromConfig = normalizeLogLevel(cfg?.level, defaultLevel);
   const level = envLevel ?? fromConfig;
-  
+
   let file = cfg?.file ?? defaultRollingPathForToday();
   let logFilePrefix: string | null = null;
-  
+
   if (file.includes("%DATE%") && cfg?.file) {
     const today = formatLocalDate(new Date());
     file = file.replace(/%DATE%/g, today);
@@ -149,7 +149,7 @@ function resolveSettings(): ResolvedSettings {
     const parts = cfg.file.split("%DATE%");
     logFilePrefix = path.basename(parts[0]);
   }
-  
+
   const maxFileBytes = resolveMaxLogFileBytes(cfg?.maxFileBytes);
   return { level, file, maxFileBytes, logFilePrefix };
 }
@@ -384,7 +384,7 @@ function pruneOldRollingLogs(dir: string, logFilePrefix?: string | null): void {
       if (!entry.name.endsWith(LOG_SUFFIX)) {
         continue;
       }
-      
+
       // If prefix is configured, only prune files matching that prefix + date pattern
       if (logFilePrefix) {
         if (!entry.name.startsWith(logFilePrefix)) {
@@ -401,7 +401,7 @@ function pruneOldRollingLogs(dir: string, logFilePrefix?: string | null): void {
           continue;
         }
       }
-      
+
       const fullPath = path.join(dir, entry.name);
       try {
         const stat = fs.statSync(fullPath);
